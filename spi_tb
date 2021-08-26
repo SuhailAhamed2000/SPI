@@ -1,0 +1,32 @@
+module spitb();
+  reg clk,rst,start;
+  reg [7:0]TxData_master;
+  reg [1:0]MODE;
+  reg [7:0]TxData_slave;
+  wire finish,Sclk,MOSI,MISO,SS;
+  wire [7:0] RxData_master,RxData_slave;
+  spimaster DUTX(clk,rst,start,MODE,TxData_master,RxData_master,
+                 Sclk,SS,MOSI,MISO,finish);
+  spi_slave DUTY(start,MODE,TxData_slave,RxData_slave,Sclk,SS,MOSI,MISO);
+  initial
+    begin
+      $dumpfile("spitb.vcd");
+      $dumpvars(0,spitb);
+      #1000 $finish;
+    end
+  initial
+    begin
+      clk<=1;
+      forever #5 clk <= ~clk;
+    end
+  initial
+    begin
+      rst <= 1;MODE=2'b01;start<=0;
+      #10 rst = 0;
+      #10 rst = 0;
+      #40 start<=1;
+      TxData_master <=8'b1010_0001;
+      TxData_slave  <=8'b1010_0010;
+      #10 start<=0;
+    end
+endmodule
